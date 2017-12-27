@@ -65,25 +65,38 @@ action :create do
 
   case node["platform"]
   when "ubuntu"
-    # Upstart script
-    template "/etc/init/#{instance_name}.conf" do
-      source "mongod.upstart.erb"
-      mode '644'
-      cookbook 'hipsnip-mongodb'
-      variables(
-        "config_file" => config_file,
-        "instance_name" => instance_name
-      )   
-  
-      notifies :restart, "service[#{instance_name}]"
-    end 
-  
-  
-    service instance_name do
-      provider Chef::Provider::Service::Upstart
-      action [:enable, :start]
-    end 
-  
+    if node['platform_version'].to_f >= 16.04
+      # Systemd script
+      template "/lib/systemd/system/#{instance_name}.service" do
+        source "mongod.systemd.erb"
+        mode '644'
+        cookbook 'hipsnip-mongodb'
+        notifies :restart, "service[#{instance_name}]"
+      end 
+
+      service instance_name do
+        provider Chef::Provider::Service::Systemd
+        action [:enable, :start]
+      end 
+    else
+      # Upstart script
+      template "/etc/init/#{instance_name}.conf" do
+        source "mongod.upstart.erb"
+        mode '644'
+        cookbook 'hipsnip-mongodb'
+        variables(
+          "config_file" => config_file,
+          "instance_name" => instance_name
+        )   
+
+        notifies :restart, "service[#{instance_name}]"
+      end 
+
+      service instance_name do
+        provider Chef::Provider::Service::Upstart
+        action [:enable, :start]
+      end 
+    end
   when "debian"
     # Init script
     template "/etc/init.d/#{instance_name}" do

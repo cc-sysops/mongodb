@@ -41,3 +41,7 @@ auth = true
 replSet = <%= @replica_set %>
 oplogSize = <%= node['mongodb']['oplog'] -%>
 <% end %>
+
+<% node['mongodb']['dynamic_conf_parameters'].each do |key, value| %>
+<%= "%s = %s" % [key, value] %>
+<% end %>

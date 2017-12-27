@@ -94,4 +94,7 @@ default['mongodb']['node_check']['retries'] = 3
 default['mongodb']['node_check']['timeout'] = 10 # seconds
 # @note - timeout is exponential - the actual timeout is retry*timeout
 
+####################################################
+# Dynamic configurations to be applied to mongod.conf
 
+default['mongodb']['dynamic_conf_parameters'] = {}
